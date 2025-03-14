@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
-from multimodalhugs.modules import Adapter
+from multimodalhugs.modules import Adapter, CNNAdapter
+
 
 class VLMapper(nn.Module):
     def __init__(self, feat_dim, output_dim, mapping_layer_type, layer_norm_before,
-                 adapter_factor=None, p_dropout=None, layer_norm=None, activation=None):
+                 adapter_factor=None, adapter_ksize=None, adapter_stride=None,  p_dropout=None, layer_norm=None, activation=None):
         super(VLMapper, self).__init__()
 
         if layer_norm_before and mapping_layer_type != 'adapter':
@@ -20,6 +21,16 @@ class VLMapper(nn.Module):
                 factor=adapter_factor,
                 layernorm_before=layer_norm_before
             )
+
+        if mapping_layer_type == 'cnn_adapter':
+            self.mapping_layer = CNNAdapter(
+                input_dim=feat_dim,
+                output_dim=output_dim,
+                factor=adapter_factor,
+                kernel_size=adapter_ksize,
+                stride=adapter_stride
+            )
+
         elif mapping_layer_type == 'linear':
             self.mapping_layer = nn.Linear(feat_dim, output_dim)
         else:
